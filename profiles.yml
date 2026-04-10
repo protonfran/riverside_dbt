@@ -1,0 +1,26 @@
+riverside:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:    "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      SYSADMIN
+      database:  RIVERSIDE_DB
+      warehouse: RIVERSIDE_WH
+      schema:    silver            # default; overridden per layer in dbt_project.yml
+      threads:   4
+      client_session_keep_alive: false
+
+    prod:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:    "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      SYSADMIN
+      database:  RIVERSIDE_DB
+      warehouse: RIVERSIDE_WH
+      schema:    silver
+      threads:   8
+      client_session_keep_alive: false

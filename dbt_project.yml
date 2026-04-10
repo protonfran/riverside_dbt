@@ -1,0 +1,54 @@
+name: 'riverside'
+version: '1.0.0'
+config-version: 2
+
+profile: 'riverside'
+
+model-paths:     ["models"]
+seed-paths:      ["seeds"]
+test-paths:      ["tests"]
+macro-paths:     ["macros"]
+analysis-paths:  ["analyses"]
+
+target-path:     "target"
+clean-targets:   ["target", "dbt_packages"]
+
+vars:
+  surrogate_key_treat_nulls_as_empty_string: true
+
+models:
+  riverside:
+    silver:
+      +materialized: incremental
+      +incremental_strategy: merge
+      +schema: silver
+      +tags: ['silver']
+    gold:
+      dims:
+        +materialized: table
+        +schema: gold
+        +tags: ['gold', 'dim']
+      facts:
+        +materialized: incremental
+        +incremental_strategy: merge
+        +schema: gold
+        +tags: ['gold', 'fact']
+      semantic:
+        +materialized: view
+        +schema: gold
+        +tags: ['gold', 'semantic']
+
+seeds:
+  riverside:
+    dim_date:
+      +schema: gold
+      +tags: ['seed']
+      +column_types:
+        DATE_KEY:    integer
+        DATE_VALUE:  date
+        YEAR:        integer
+        QUARTER_NUM: integer
+        MONTH_NUM:   integer
+        WEEK_NUM:    integer
+        DAY_OF_WEEK: integer
+        IS_WEEKEND:  boolean

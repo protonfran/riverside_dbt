@@ -1,0 +1,67 @@
+version: 2
+
+models:
+
+  - name: kpi_monthly_recording_activity
+    description: >
+      Monthly aggregation of recording session volume, unique hosts, storage consumed,
+      and duration stats. Sliced by recording type. Primary view for trend dashboards.
+    columns:
+      - name: year
+        tests: [not_null]
+      - name: year_month
+        tests: [not_null]
+      - name: recording_type
+        tests: [not_null]
+      - name: total_sessions
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 10000000
+
+  - name: kpi_user_engagement
+    description: >
+      Per-user engagement metrics including sessions in last 30 days, lifetime minutes
+      recorded, and an engagement tier label (Power User / Active / Casual / Dormant).
+      Primary view for product and CS teams.
+    columns:
+      - name: user_sk
+        tests: [not_null, unique]
+      - name: engagement_tier
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Power User', 'Active', 'Casual', 'Dormant']
+
+  - name: kpi_mrr_summary
+    description: >
+      MRR and ARR aggregated by plan type, billing cycle, tier, and country.
+      Excludes free and churned users. Primary view for finance and revenue dashboards.
+    columns:
+      - name: paying_users
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 10000000
+      - name: total_mrr_usd
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000000
+
+  - name: kpi_churned_users
+    description: >
+      Users who cancelled a paid subscription in the last 90 days.
+      Includes lost MRR, cancellation reason, and pre-churn engagement tier.
+      Primary view for retention and win-back campaigns.
+
+  - name: kpi_studio_leaderboard
+    description: >
+      Studio-level performance ranked by total sessions and storage.
+      Includes last 30-day activity and owner metadata.
+      Primary view for customer success and sales teams.
+    columns:
+      - name: studio_sk
+        tests: [not_null, unique]
+      - name: rank_by_sessions
+        tests: [not_null]

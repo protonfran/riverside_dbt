@@ -1,0 +1,115 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: >
+      Raw landing tables populated by Snowpipe from S3.
+      All columns are VARCHAR to preserve source fidelity.
+      Never transform data directly in these tables.
+    database: RIVERSIDE_DB
+    schema: BRONZE
+    tags: ['bronze', 'raw']
+
+    tables:
+      - name: raw_users
+        description: Raw user account records from Riverside.fm
+        loaded_at_field: _LOADED_AT
+        freshness:
+          warn_after:  {count: 2,  period: hour}
+          error_after: {count: 12, period: hour}
+        columns:
+          - name: RAW_ID
+            description: Source system user UUID
+          - name: EMAIL
+          - name: DISPLAY_NAME
+          - name: PLAN_TYPE
+            description: "free | standard | pro | business | enterprise"
+          - name: PLAN_STATUS
+            description: "active | churned | trial"
+          - name: COUNTRY_CODE
+          - name: CREATED_AT
+            description: ISO-8601 string from source
+          - name: UPDATED_AT
+          - name: _LOADED_AT
+            description: Timestamp when Snowpipe inserted this row
+          - name: _FILENAME
+            description: S3 object key via METADATA$FILENAME
+
+      - name: raw_studios
+        description: Raw studio (workspace) records
+        loaded_at_field: _LOADED_AT
+        freshness:
+          warn_after:  {count: 2,  period: hour}
+          error_after: {count: 12, period: hour}
+        columns:
+          - name: RAW_ID
+          - name: USER_ID
+            description: FK to raw_users.RAW_ID
+          - name: STUDIO_NAME
+          - name: PLAN_TYPE
+          - name: CREATED_AT
+          - name: UPDATED_AT
+          - name: _LOADED_AT
+          - name: _FILENAME
+
+      - name: raw_recordings
+        description: Raw recording session events
+        loaded_at_field: _LOADED_AT
+        freshness:
+          warn_after:  {count: 1,  period: hour}
+          error_after: {count: 6,  period: hour}
+        columns:
+          - name: RAW_ID
+            description: Session UUID
+          - name: STUDIO_ID
+          - name: HOST_USER_ID
+          - name: SESSION_TITLE
+          - name: STARTED_AT
+          - name: ENDED_AT
+          - name: DURATION_SECONDS
+          - name: PARTICIPANT_COUNT
+          - name: RECORDING_TYPE
+            description: "audio | video | screen"
+          - name: STATUS
+            description: "completed | failed | in_progress"
+          - name: STORAGE_MB
+          - name: _LOADED_AT
+          - name: _FILENAME
+
+      - name: raw_participants
+        description: Raw participant bridge records per recording
+        loaded_at_field: _LOADED_AT
+        freshness:
+          warn_after:  {count: 1,  period: hour}
+          error_after: {count: 6,  period: hour}
+        columns:
+          - name: RAW_ID
+          - name: RECORDING_ID
+          - name: USER_ID
+            description: NULL for anonymous guests
+          - name: GUEST_EMAIL
+          - name: ROLE
+            description: "host | guest | producer"
+          - name: JOINED_AT
+          - name: LEFT_AT
+          - name: _LOADED_AT
+          - name: _FILENAME
+
+      - name: raw_subscriptions
+        description: Raw subscription and billing records
+        loaded_at_field: _LOADED_AT
+        freshness:
+          warn_after:  {count: 6,  period: hour}
+          error_after: {count: 24, period: hour}
+        columns:
+          - name: RAW_ID
+          - name: USER_ID
+          - name: PLAN_TYPE
+          - name: BILLING_CYCLE
+            description: "monthly | annual"
+          - name: MRR_USD
+          - name: START_DATE
+          - name: END_DATE
+          - name: CANCELLATION_REASON
+          - name: _LOADED_AT
+          - name: _FILENAME
