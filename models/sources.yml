@@ -6,7 +6,7 @@ sources:
       Raw landing tables populated by Snowpipe from S3.
       All columns are VARCHAR to preserve source fidelity.
       Never transform data directly in these tables.
-    database: RIVERSIDE_DB
+    database: RIVERSIDE_DB_DEV
     schema: BRONZE
     tags: ['bronze', 'raw']
 

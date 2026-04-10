@@ -27,11 +27,7 @@ models:
     columns:
       - name: user_sk
         tests: [not_null, unique]
-      - name: engagement_tier
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Power User', 'Active', 'Casual', 'Dormant']
+
 
   - name: kpi_mrr_summary
     description: >

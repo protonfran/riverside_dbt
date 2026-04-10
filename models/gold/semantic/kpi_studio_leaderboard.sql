@@ -30,9 +30,6 @@ studio_metrics as (
         sum(f.duration_minutes)                                 as total_minutes,
         round(avg(f.duration_minutes), 1)                       as avg_session_minutes,
         sum(f.storage_mb)                                       as total_storage_mb,
-        count(distinct f.recording_sk)
-            filter (where f.started_at >= dateadd('day', -30, current_date()))
-                                                                as sessions_l30d,
         max(f.started_at)                                       as last_session_at
 
     from fact f
@@ -56,7 +53,6 @@ final as (
         m.avg_session_minutes,
         coalesce(m.total_storage_mb, 0)                         as total_storage_mb,
         round(coalesce(m.total_storage_mb, 0) / 1024, 2)       as total_storage_gb,
-        coalesce(m.sessions_l30d, 0)                            as sessions_l30d,
         m.last_session_at,
 
         rank() over (order by coalesce(m.total_sessions, 0) desc)   as rank_by_sessions,

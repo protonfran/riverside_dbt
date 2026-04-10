@@ -45,7 +45,6 @@ final as (
 
         coalesce(e.lifetime_sessions, 0)                    as lifetime_sessions,
         coalesce(e.total_minutes_recorded, 0)               as total_minutes_recorded,
-        e.engagement_tier                                   as pre_churn_engagement_tier
 
     from subscriptions s
     join users      u on s.user_sk = u.user_sk
