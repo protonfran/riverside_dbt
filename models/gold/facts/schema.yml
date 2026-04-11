@@ -1,0 +1,59 @@
+version: 2
+
+models:
+
+  - name: fact_recording
+    description: >
+      Fact table at recording session grain.
+      Only completed sessions are included (filtered in stg_recordings).
+      All FKs are surrogate keys joining to Gold dims.
+    columns:
+      - name: recording_sk
+        description: Surrogate key — grain of this fact table
+        tests: [not_null, unique]
+      - name: studio_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_studio')
+              field: studio_sk
+      - name: host_user_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_user')
+              field: user_sk
+      - name: date_key
+        tests:
+          - not_null
+          - relationships:
+              to: source('gold_static', 'dim_date')
+              field: DATE_KEY
+      - name: duration_seconds
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 86400
+      - name: participant_count
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 500
+      - name: storage_mb
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1000000
+              row_condition: "storage_mb is not null"
+      - name: duration_bucket
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['short', 'medium', 'long']
+      - name: recording_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['audio', 'video', 'screen', 'unknown']
