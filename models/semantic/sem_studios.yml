@@ -1,0 +1,46 @@
+version: 2
+
+semantic_models:
+
+  - name: studios
+    description: >
+      Semantic model over dim_studio. Provides studio-level attributes
+      so the agent can slice recording metrics by studio or owner properties.
+      Note: user_sk is not projected into dim_studio (it is used only for the
+      join during Gold build). Studio-to-user relationships are resolved via
+      the recordings semantic model which carries host_user_sk.
+    model: ref('dim_studio')
+
+    defaults:
+      agg_time_dimension: created_at
+
+    entities:
+      - name: studio
+        type: primary
+        expr: studio_sk
+
+    dimensions:
+      - name: studio_name
+        type: categorical
+        expr: studio_name
+
+      - name: owner_plan_tier
+        type: categorical
+        description: Plan tier of the studio owner
+        expr: owner_plan_tier
+
+      - name: country_code
+        type: categorical
+        expr: country_code
+
+      - name: created_at
+        type: time
+        type_params:
+          time_granularity: day
+        expr: created_at
+
+    measures:
+      - name: studio_count
+        description: Total number of studios
+        agg: count_distinct
+        expr: studio_sk

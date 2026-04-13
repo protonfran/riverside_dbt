@@ -1,0 +1,83 @@
+version: 2
+
+semantic_models:
+
+  - name: subscriptions
+    description: >
+      Semantic model over stg_subscriptions. Provides subscription-level
+      measures for MRR, churn, and billing analysis.
+    model: ref('stg_subscriptions')
+
+    defaults:
+      agg_time_dimension: start_date
+
+    entities:
+      - name: subscription
+        type: primary
+        expr: subscription_sk
+
+      - name: user
+        type: foreign
+        expr: user_sk
+
+    dimensions:
+      - name: plan_type
+        type: categorical
+        expr: plan_type
+
+      - name: billing_cycle
+        type: categorical
+        description: "monthly | annual"
+        expr: billing_cycle
+
+      - name: is_active
+        type: categorical
+        description: "true if subscription is currently active"
+        expr: "cast(is_active as varchar)"
+
+      - name: cancellation_reason
+        type: categorical
+        expr: cancellation_reason
+
+      - name: start_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: start_date
+
+      - name: end_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: end_date
+
+    measures:
+      - name: subscription_count
+        description: Total number of subscriptions
+        agg: count_distinct
+        expr: subscription_sk
+
+      - name: active_subscription_count
+        description: Currently active subscriptions
+        agg: count_distinct
+        expr: "case when is_active then subscription_sk end"
+
+      - name: churned_subscription_count
+        description: Subscriptions that ended (churned)
+        agg: count_distinct
+        expr: "case when not is_active then subscription_sk end"
+
+      - name: mrr_active
+        description: Sum of normalised MRR across active subscriptions
+        agg: sum
+        expr: "case when is_active then mrr_usd_normalised end"
+
+      - name: arr_active
+        description: Estimated ARR (MRR x 12)
+        agg: sum
+        expr: "case when is_active then mrr_usd_normalised * 12 end"
+
+      - name: mrr_churned
+        description: MRR lost from churned subscriptions in period
+        agg: sum
+        expr: "case when not is_active then mrr_usd_normalised end"

@@ -1,0 +1,121 @@
+version: 2
+
+saved_queries:
+
+  # The agent can call these by name directly.
+  # Each one maps to a concrete question a business user would ask.
+
+  - name: monthly_session_volume
+    description: >
+      Sessions, recording hours, unique hosts and storage by month and recording type.
+      Agent question: "Show me monthly recording activity"
+    label: Monthly session volume
+    query_params:
+      metrics:
+        - total_sessions
+        - total_recording_hours
+        - total_storage_gb
+        - avg_session_duration_minutes
+      group_by:
+        - TimeDimension('recording__started_at', 'month')
+        - Dimension('recording__recording_type')
+
+  - name: mrr_by_plan
+    description: >
+      MRR, ARR, ARPU and user count segmented by plan type and billing cycle.
+      Agent question: "What is our MRR breakdown by plan?"
+    label: MRR by plan
+    query_params:
+      metrics:
+        - total_mrr
+        - total_arr
+        - arpu
+        - active_users
+      group_by:
+        - Dimension('users__plan_type')
+        - Dimension('users__plan_tier')
+        - Dimension('users__active_billing_cycle')
+
+  - name: mrr_by_country
+    description: >
+      MRR and active users by country.
+      Agent question: "Show MRR by country"
+    label: MRR by country
+    query_params:
+      metrics:
+        - total_mrr
+        - active_users
+        - arpu
+      group_by:
+        - Dimension('users__country_code')
+
+  - name: churn_summary
+    description: >
+      Churned users, churned MRR, and churn rate by plan tier.
+      Agent question: "What does our churn look like?"
+    label: Churn summary
+    query_params:
+      metrics:
+        - churned_users
+        - churned_mrr
+        - churn_rate
+      group_by:
+        - Dimension('users__plan_tier')
+        - Dimension('subscriptions__cancellation_reason')
+
+  - name: session_engagement_by_tier
+    description: >
+      Average session duration and participant count segmented by user plan tier.
+      Agent question: "Do enterprise users record longer sessions?"
+    label: Session engagement by plan tier
+    query_params:
+      metrics:
+        - total_sessions
+        - avg_session_duration_minutes
+        - avg_participants_per_session
+        - total_storage_gb
+      group_by:
+        - Dimension('users__plan_tier')
+        - Dimension('recording__recording_type')
+
+  - name: weekly_session_trend
+    description: >
+      Session volume week-over-week for trend detection.
+      Agent question: "Show me the session trend over the last 12 weeks"
+    label: Weekly session trend
+    query_params:
+      metrics:
+        - total_sessions
+        - total_recording_hours
+      group_by:
+        - TimeDimension('recording__started_at', 'week')
+
+  - name: studio_leaderboard
+    description: >
+      Top studios ranked by session volume with storage and duration breakdown.
+      Agent question: "Which studios are most active?"
+    label: Studio leaderboard
+    query_params:
+      metrics:
+        - total_sessions
+        - total_recording_hours
+        - total_storage_gb
+        - avg_session_duration_minutes
+      group_by:
+        - Dimension('studios__studio_name')
+        - Dimension('studios__owner_plan_tier')
+        - Dimension('studios__country_code')
+
+  - name: mrr_trend
+    description: >
+      MRR over time to track revenue growth month by month.
+      Agent question: "How has our MRR grown over the last 6 months?"
+    label: MRR trend
+    query_params:
+      metrics:
+        - total_mrr
+        - churned_mrr
+        - net_mrr_change
+        - active_users
+      group_by:
+        - TimeDimension('subscriptions__start_date', 'month')

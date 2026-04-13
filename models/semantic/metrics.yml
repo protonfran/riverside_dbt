@@ -1,0 +1,197 @@
+version: 2
+
+metrics:
+
+  # ── Recording metrics ──────────────────────────────────────
+
+  - name: total_sessions
+    description: >
+      Total number of completed recording sessions.
+      Ask: "How many sessions did we have this month?"
+    label: Total sessions
+    type: simple
+    type_params:
+      measure:
+        name: session_count
+        fill_nulls_with: 0
+    filter: |
+      {{ Dimension('recording__recording_type') }} is not null
+
+  - name: total_sessions_by_type
+    description: >
+      Session count broken down by recording type (audio / video / screen).
+      Ask: "How many video vs audio sessions last quarter?"
+    label: Sessions by type
+    type: simple
+    type_params:
+      measure:
+        name: session_count
+        fill_nulls_with: 0
+
+  - name: avg_session_duration_minutes
+    description: >
+      Average recording session length in minutes.
+      Ask: "What is the average session length this year?"
+    label: Avg session duration (min)
+    type: simple
+    type_params:
+      measure:
+        name: avg_duration_minutes
+
+  - name: total_recording_minutes
+    description: Total minutes recorded across all sessions
+    label: Total recording minutes
+    type: simple
+    type_params:
+      measure:
+        name: total_duration_minutes
+        fill_nulls_with: 0
+
+  - name: total_recording_hours
+    description: >
+      Total hours recorded across all sessions.
+      Ask: "How many hours of content was recorded in Q4?"
+    label: Total recording hours
+    type: derived
+    type_params:
+      expr: "total_recording_minutes / 60.0"
+      metrics:
+        - name: total_recording_minutes
+
+  - name: avg_participants_per_session
+    description: >
+      Average number of participants per recording session.
+      Ask: "What is the average number of guests per session?"
+    label: Avg participants per session
+    type: simple
+    type_params:
+      measure:
+        name: avg_participants
+
+  - name: total_storage_gb
+    description: >
+      Total storage consumed by all recordings in GB.
+      Ask: "How much storage are we consuming per month?"
+    label: Total storage (GB)
+    type: simple
+    type_params:
+      measure:
+        name: total_storage_gb
+        fill_nulls_with: 0
+
+  # ── User metrics ───────────────────────────────────────────
+
+  - name: total_users
+    description: >
+      Total registered user accounts.
+      Ask: "How many total users do we have?"
+    label: Total users
+    type: simple
+    type_params:
+      measure:
+        name: user_count
+        fill_nulls_with: 0
+
+  - name: active_users
+    description: >
+      Users with an active subscription or free plan in good standing.
+      Ask: "How many active users do we have by country?"
+    label: Active users
+    type: simple
+    type_params:
+      measure:
+        name: active_user_count
+        fill_nulls_with: 0
+
+  - name: churned_users
+    description: >
+      Users who have cancelled their subscription.
+      Ask: "How many users churned this quarter?"
+    label: Churned users
+    type: simple
+    type_params:
+      measure:
+        name: churned_user_count
+        fill_nulls_with: 0
+
+  - name: churn_rate
+    description: >
+      Percentage of users who have churned out of total users.
+      Ask: "What is our overall churn rate?"
+    label: Churn rate (%)
+    type: derived
+    type_params:
+      expr: "DIV0NULL(churned_users, total_users) * 100"
+      metrics:
+        - name: churned_users
+        - name: total_users
+
+  # ── Revenue metrics ────────────────────────────────────────
+
+  - name: total_mrr
+    description: >
+      Total monthly recurring revenue from active subscriptions (normalised to monthly).
+      Ask: "What is our current MRR?" or "Show MRR by plan tier"
+    label: Total MRR (USD)
+    type: simple
+    type_params:
+      measure:
+        name: mrr_active
+        fill_nulls_with: 0
+
+  - name: total_arr
+    description: >
+      Estimated annual recurring revenue (MRR x 12).
+      Ask: "What is our ARR by country?"
+    label: Total ARR (USD)
+    type: simple
+    type_params:
+      measure:
+        name: arr_active
+        fill_nulls_with: 0
+
+  - name: arpu
+    description: >
+      Average revenue per active paying user (MRR basis).
+      Ask: "What is our ARPU for pro plan users?"
+    label: ARPU (USD)
+    type: simple
+    type_params:
+      measure:
+        name: avg_mrr_per_user
+
+  - name: churned_mrr
+    description: >
+      MRR lost from subscriptions that ended in the period.
+      Ask: "How much MRR did we lose to churn last month?"
+    label: Churned MRR (USD)
+    type: simple
+    type_params:
+      measure:
+        name: mrr_churned
+        fill_nulls_with: 0
+
+  - name: net_mrr_change
+    description: >
+      Net change in MRR = new MRR minus churned MRR in period.
+      Ask: "What was our net MRR change this month?"
+    label: Net MRR change (USD)
+    type: derived
+    type_params:
+      expr: "total_mrr - churned_mrr"
+      metrics:
+        - name: total_mrr
+        - name: churned_mrr
+
+  # ── Studio metrics ─────────────────────────────────────────
+
+  - name: active_studios
+    description: >
+      Number of studios that have at least one recording in the period.
+      Ask: "How many studios were active last month?"
+    label: Active studios
+    type: simple
+    type_params:
+      measure:
+        name: session_count
+        fill_nulls_with: 0

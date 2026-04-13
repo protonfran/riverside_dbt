@@ -3,13 +3,13 @@ riverside:
   outputs:
     dev:
       type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
-      user:    "{{ env_var('SNOWFLAKE_USER') }}"
-      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      account: wbmfmyw-riverside
+      user:    DBT_USER
+      password: sx2Cv9Cd28tC3J_
       role:      ACCOUNTADMIN
       database:  RIVERSIDE_DB_DEV
       warehouse: RIVERSIDE_WH_DEV
-      schema:    silver            # default; overridden per layer in dbt_project.yml
+      schema:    dbt_core            # default; overridden per layer in dbt_project.yml
       threads:   4
       client_session_keep_alive: false
 

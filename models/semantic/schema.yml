@@ -1,0 +1,8 @@
+models:
+  - name: time_spine_daily   # Must match your model name (without .sql)
+    description: "Daily time spine for MetricFlow / Semantic Layer"
+    time_spine:
+      standard_granularity_column: date_day   # Column name from your SQL
+    columns:
+      - name: date_day
+        granularity: day                      # Must be 'day' or smaller (e.g., 'hour')

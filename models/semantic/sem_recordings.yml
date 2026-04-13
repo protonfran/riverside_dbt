@@ -1,0 +1,87 @@
+version: 2
+
+semantic_models:
+
+  - name: recordings
+    description: >
+      Semantic model over fact_recording. Grain is one completed recording session.
+      Provides all session-level measures and dimensions for the AI agent to query.
+    model: ref('fact_recording')
+
+    defaults:
+      agg_time_dimension: started_at
+
+    entities:
+      - name: recording
+        type: primary
+        expr: recording_sk
+
+      - name: studio
+        type: foreign
+        expr: studio_sk
+
+      - name: host_user
+        type: foreign
+        expr: host_user_sk
+
+    dimensions:
+      - name: started_at
+        type: time
+        type_params:
+          time_granularity: day
+        expr: started_at
+
+      - name: recording_type
+        type: categorical
+        description: "audio | video | screen"
+        expr: recording_type
+
+      - name: duration_bucket
+        type: categorical
+        description: "short (<10 min) | medium (10–60 min) | long (60 min+)"
+        expr: duration_bucket
+
+      - name: session_title
+        type: categorical
+        expr: session_title
+
+    measures:
+      - name: session_count
+        description: Total number of completed recording sessions
+        agg: count_distinct
+        expr: recording_sk
+
+      - name: total_duration_minutes
+        description: Sum of session duration in minutes
+        agg: sum
+        expr: duration_minutes
+
+      - name: avg_duration_minutes
+        description: Average session duration in minutes
+        agg: average
+        expr: duration_minutes
+
+      - name: median_duration_minutes
+        description: Median session duration in minutes
+        agg: median
+        expr: duration_minutes
+
+      - name: total_participants
+        description: Sum of participants across all sessions
+        agg: sum
+        expr: participant_count
+
+      - name: avg_participants
+        description: Average number of participants per session
+        agg: average
+        expr: participant_count
+
+      - name: total_storage_mb
+        description: Total storage consumed in MB
+        agg: sum
+        expr: storage_mb
+
+      - name: total_storage_gb
+        description: Total storage consumed in GB
+        agg: sum
+        expr: "storage_mb / 1024.0"

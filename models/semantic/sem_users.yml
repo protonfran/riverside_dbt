@@ -1,0 +1,72 @@
+version: 2
+
+semantic_models:
+
+  - name: users
+    description: >
+      Semantic model over dim_user. Provides user-level attributes and
+      measures for slicing metrics by plan, country, and engagement tier.
+      MRR aggregations live in the subscriptions semantic model — this model
+      only exposes the denormalised current_mrr_usd snapshot per user.
+    model: ref('dim_user')
+
+    defaults:
+      agg_time_dimension: created_at
+
+    entities:
+      - name: user
+        type: primary
+        expr: user_sk
+
+    dimensions:
+      - name: plan_type
+        type: categorical
+        description: "free | standard | pro | business | enterprise"
+        expr: plan_type
+
+      - name: plan_tier
+        type: categorical
+        description: "Tier 1 (enterprise) through Free"
+        expr: plan_tier
+
+      - name: plan_status
+        type: categorical
+        description: "active | churned | trial"
+        expr: plan_status
+
+      - name: country_code
+        type: categorical
+        description: ISO-3166 alpha-2 country code
+        expr: country_code
+
+      - name: active_billing_cycle
+        type: categorical
+        description: "monthly | annual"
+        expr: active_billing_cycle
+
+      - name: created_at
+        type: time
+        type_params:
+          time_granularity: day
+        expr: created_at
+
+    measures:
+      - name: user_count
+        description: Total number of user accounts
+        agg: count_distinct
+        expr: user_sk
+
+      - name: active_user_count
+        description: Users with plan_status = active
+        agg: count_distinct
+        expr: "case when plan_status = 'active' then user_sk end"
+
+      - name: churned_user_count
+        description: Users with plan_status = churned
+        agg: count_distinct
+        expr: "case when plan_status = 'churned' then user_sk end"
+
+      - name: avg_mrr_per_user
+        description: Average MRR per paying active user (from denormalised snapshot)
+        agg: average
+        expr: "case when plan_status = 'active' and current_mrr_usd > 0 then current_mrr_usd end"
